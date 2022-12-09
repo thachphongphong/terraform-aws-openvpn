@@ -9,6 +9,12 @@
     timeout: 300
   become: false
 
+- name: Install aptitude
+  apt:
+    name: aptitude
+    state: latest
+    update_cache: true
+
 - name: Install prerequisite packages
   apt:
     name: "{{ item }}"
@@ -18,21 +24,29 @@
     - ca-certificates
     - curl
     - software-properties-common
+    - python3-pip
+    - virtualenv
+    - python3-setuptools
 
-- name: Add Docker's official GPG key
+- name: Add Docker GPG apt Key
   apt_key:
-    url: "https://download.docker.com/linux/ubuntu/gpg"
+    url: https://download.docker.com/linux/ubuntu/gpg
     state: present
 
-- name: Add Docker's repository
+- name: Add Docker Repository
   apt_repository:
-    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    repo: deb https://download.docker.com/linux/ubuntu focal stable
     state: present
 
-- name: Install Docker CE
+- name: Update apt and install docker-ce
   apt:
-    name: docker-ce=17.06*
-    update_cache: yes
+    name: docker-ce
+    state: latest
+    update_cache: true
+
+- name: Install Docker Module for Python
+  pip:
+    name: docker
 
 - name: Add user to Docker group
   raw: sudo usermod -a -G docker ubuntu
@@ -40,8 +54,8 @@
 - name: Enable Docker at startup
   raw: sudo systemctl enable docker
 
-- name: Install Docker Compose 1.13.0
-  raw: "curl -L https://github.com/docker/compose/releases/download/1.13.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose"
-
-- name: Add exec permission to Docker Compose executable
-  raw: sudo chmod +x /usr/local/bin/docker-compose
+- name: Install docker-compose from official github repo
+  get_url:
+    url : https://github.com/docker/compose/releases/download/v2.14.0/docker-compose-linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: 'u+x,g+x'

@@ -1,0 +1,23 @@
+---
+openvpn_container_name: openvpn
+openvpn_network_name: '{{ openvpn_container_name }}'
+container_pull: true
+system_vpn: true
+split_tunnel: true
+net_mode: '{{ "host" if system_vpn else "bridge" }}'
+nets: '{{ [] if system_vpn else [ { "name": openvpn_network_name } ] }}'
+genconfig_options: '{{ "-Nd" if split_tunnel else "" }}'
+custom_dns: true
+custom_dns_options: ''
+openvpn_container_url: '{{ inventory_hostname }}'
+custom_dns_ip: 10.194.38.2
+openvpn_container_dns: 1.1.1.1 8.8.8.8
+openvpn_container_network_subnet: ''
+openvpn_container_network_gateway: ''
+vpn_subnet: '10.8.0.0/24'
+openvpn_container_port: '1194'
+custom_vpn_options: -p 'route 172.31.0.0 255.255.0.0'
+
+openvpn_container_data_path : '/data/conf'
+openvpn_container_ca_key: my-super-secret
+

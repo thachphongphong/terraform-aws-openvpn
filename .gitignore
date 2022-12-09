@@ -6,3 +6,25 @@
 .terraform/
 
 .idea
+
+*.tfstate
+*.tfstate.backup
+.terraform
+*.iml
+.idea/
+*.local
+#*.tfvars
+*.tfvars.json
+credentials
+*.lock.hlc
+*Chart.lock
+*.lock
+*.terraform.lock.hcl
+*kubeconfig_*
+#*terraform.tfvars*
+example/*/*/terraform.tfvars
+example/*/*/*/terraform.tfvars
+example/*/*/*/*/terraform.tfvars
+keys
+
+**/clients

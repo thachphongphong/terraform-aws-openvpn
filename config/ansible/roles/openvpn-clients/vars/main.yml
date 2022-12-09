@@ -1,0 +1,5 @@
+---
+openvpn_container_name: openvpn
+openvpn_container_ca_key: my-super-secret
+openvpn_client_names: ['ldt', 'tpp', 'linh']
+

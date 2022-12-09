@@ -1,0 +1,10 @@
+---
+- name: Generate client config
+  include_tasks: config-user.yml
+  loop: "{{ openvpn_client_names }}"
+  ignore_errors: true
+
+- name: Remove configuration openvpn container
+  docker_container:
+    name: openvpn-user-conf
+    state: absent

@@ -1,0 +1,68 @@
+---
+- name: Check if client {{ item }} is exist
+  stat:
+    path: "/data/conf/pki/reqs/{{item}}.req"
+  register: reqs_client
+
+- name: Generate client {{ item }} config
+  command: docker exec {{ openvpn_container_name }} easyrsa --passin='pass:{{ openvpn_container_ca_key }}' build-client-full {{ item }} nopass
+  register: client_conf
+  when: not reqs_client.stat.exists
+
+- name: Print test_conf config
+  debug:
+    var: client_conf.stdout_lines
+  when: not reqs_client.stat.exists
+
+#- name: Generate config for user {{ item }}
+#  docker_container:
+#    name: openvpn-user-conf
+#    image: kylemanna/openvpn
+#    state: started
+#    volumes: '{{ openvpn_container_name }}:/etc/openvpn:z'
+#    detach: false
+#    interactive: yes
+#    tty: yes
+#    env:
+#      EASYRSA_VARS_FILE: ''
+#      EASYRSA_PASSIN: 'pass:{{ openvpn_container_ca_key }}'
+#    command: easyrsa build-client-full {{ item }} nopass
+#  ignore_errors: true
+#  when: not reqs_client.stat.exists
+#  register: test_conf
+
+
+- name: Get client {{ item }} config
+  command: docker exec {{ openvpn_container_name }} ovpn_getclient {{ item }}
+  register: user_conf
+  when: not reqs_client.stat.exists
+
+- name: Copy the output to a local file
+  become: false
+  copy:
+    content: '{{ user_conf.stdout }}'
+    dest: "{{ playbook_dir }}/clients/{{ item }}.ovpn"
+  delegate_to: localhost
+  when: not reqs_client.stat.exists
+
+#- name: Check if client is exist
+#  stat:
+#    path: "/home/ubuntu/{{item}}.ovpn"
+#  register: client_conf
+#
+#- name: Get user's config
+#  docker_container:
+#    name: openvpn-user-conf
+#    image: kylemanna/openvpn
+#    state: started
+#    volumes:
+#      - '{{ openvpn_container_name }}:/etc/openvpn:z'
+#    detach: false
+#    command: "ovpn_getclient {{ item }} > {{ item }}.ovpn"
+#  ignore_errors: true
+#  when: not client_conf.stat.exists
+
+#- name: Get client
+#  fetch:
+#    src: /home/ubuntu/{{item}}.ovpn
+#    dest: /Users/linhdo/WORKSPACE/DevOps/OPENVPN/terraform-aws-openvpn/keys

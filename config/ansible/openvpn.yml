@@ -24,7 +24,8 @@
       setup:
 
   roles:
-    - update_os
-    - docker_ubuntu
-    - mount_ebs_volume
-    - openvpn
+#    - update_os
+#    - docker_ubuntu
+#    - mount_ebs_volume
+#    - openvpn
+    - openvpn-clients

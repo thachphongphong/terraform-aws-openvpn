@@ -1,4 +1,52 @@
 ---
+- name: Check if openvpn server config is exist
+  stat:
+    path: "/data/conf/openvpn.conf"
+  register: server_conf
+
+- name: Configure openvpn container
+  docker_container:
+    name: '{{ openvpn_container_name }}'
+    image: kylemanna/openvpn
+    state: started
+    network_mode: '{{ net_mode }}'
+    networks_cli_compatible: true
+    networks: '{{ nets }}'
+    volumes:
+      - '{{ openvpn_container_data_path }}:/etc/openvpn:z'
+    detach: false
+    command: ovpn_genconfig -C AES-256-CBC -a SHA384 {{ genconfig_options }} -u udp://{{ openvpn_container_url }} -s {{ vpn_subnet }} -n {{ custom_dns_ip if custom_dns else openvpn_container_dns }} {{ custom_vpn_options }}
+  when: not server_conf.stat.exists
+
+- name: Check if openvpn pki dir is exist
+  stat:
+    path: "/data/conf/pki"
+  register: pki_dir
+
+- name: Configure keys for openvpn container
+  docker_container:
+    name: '{{ openvpn_container_name }}'
+    image: kylemanna/openvpn
+    state: started
+    network_mode: '{{ net_mode }}'
+    networks_cli_compatible: true
+    networks: '{{ nets }}'
+    volumes:
+      - '{{ openvpn_container_data_path }}:/etc/openvpn:z'
+    detach: false
+    env:
+      EASYRSA_BATCH: '1'
+      EASYRSA_PASSIN: 'pass:{{ openvpn_container_ca_key }}'
+      EASYRSA_PASSOUT: 'pass:{{ openvpn_container_ca_key }}'
+      EASYRSA_REQ_CN: '{{ openvpn_container_url }}'
+    command: ovpn_initpki
+  when: not pki_dir.stat.exists
+
+- name: Remove openvpn configuration container
+  docker_container:
+    name: '{{ openvpn_container_name }}'
+    state: absent
+
 - name: Upload OpenVPN Docker Compose file
   become: false
   copy:
