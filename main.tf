@@ -1,5 +1,5 @@
 resource "aws_ebs_volume" "openvpn_data" {
-  availability_zone = var.ebs_region
+  availability_zone = aws_instance.openvpn.availability_zone
   size              = var.ebs_size
   encrypted         = true
 
@@ -15,8 +15,9 @@ resource "aws_volume_attachment" "ebs_att" {
   volume_id   = aws_ebs_volume.openvpn_data.id
 
   provisioner "local-exec" {
-    command = "ansible-playbook --private-key keys/openvpn -i '${aws_instance.openvpn.public_ip},' config/ansible/openvpn.yml"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook --private-key keys/openvpn -i '${aws_instance.openvpn.public_ip},' config/ansible/openvpn.yml"
   }
+  depends_on = [aws_ebs_volume.openvpn_data]
 }
 
 resource "aws_key_pair" "openvpn" {

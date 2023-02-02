@@ -28,7 +28,7 @@ generate "variables" {
 
 variable "region" {
   type    = string
-  default = "us-east-1"
+  default = "ap-southeast-1"
 }
 
 variable "shared_credentials_file" {
